@@ -1,0 +1,30 @@
+---
+title: "drifter"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Usage
+
+```{r libraries}
+suppressPackageStartupMessages(
+  {
+    library(sf)
+    library(dplyr)
+    library(drifter)
+  }
+)
+```
+
+### Reading example data
+```{r examples}
+# drift_tibble = read_gpx("inst/ex_data/cape_cod_complicated.GPX")
+drift_sf = read_gpx("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
+drift_sf1 = read_gpx1("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
+
+```
+
+
