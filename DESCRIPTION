@@ -1,11 +1,11 @@
 Package: drifter
 Type: Package
-Title: drifter - working with drifter GPX data
+Title: drifter - working with track data
 Version: 0.1.0
 Author: Kyle S. Oliveira
 Maintainer: Kyle S. Oliveira <kyle.oliveira@maine.edu>
 URL: https://github.com/kolive4/drifter
-Description: Supplementary tools working with drifter GPX data.
+Description: Supplementary tools working with track data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -15,4 +15,6 @@ Imports:
   rlang,
   dplyr,
   sf,
-  gpx
+  xml2,
+  readr,
+  lubridate
