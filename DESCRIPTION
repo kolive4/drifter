@@ -18,3 +18,5 @@ Imports:
   xml2,
   readr,
   lubridate
+Suggests:
+  maree

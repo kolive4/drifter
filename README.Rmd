@@ -19,6 +19,9 @@ knitr::opts_chunk$set(echo = TRUE)
 -   [readr](https://CRAN.R-project.org/package=readr)
 -   [lubridate](https://CRAN.R-project.org/package=lubridate)
 
+### Suggested/Optional Packages
+-   [maree](https://github.com/BigelowLab/maree)
+
 ### Installation
 
 ```         

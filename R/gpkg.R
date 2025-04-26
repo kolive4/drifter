@@ -1,5 +1,6 @@
 #' function to import geopackages (.gpkg)
 #' 
+#' @export
 #' @param filename name of the file
 #' @param coords date time coordinate column name
 #' @return sf table

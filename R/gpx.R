@@ -36,7 +36,7 @@ gpx.extract_tracks = function(x){
                r
              }) 
   r = do.call(rbind, r)
-  colnames(r) = c("Name", "Longitude", "Latitude", "Elevation", "Time")
+  colnames(r) = c("Name", "Latitude", "Longitude", "Elevation", "Time")
   dplyr::as_tibble(r)
 }
 

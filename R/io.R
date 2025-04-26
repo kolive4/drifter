@@ -35,11 +35,11 @@
 #' @param filename name of the file
 #' @return chr
 detect_filetype = function(filename){
-  r = if (grepl("^.*\\.gpx$", filename[1])) {
+  r = if (grepl("^.*\\.gpx$", filename[1], ignore.case = TRUE)) {
     "gpx"
-  } else if (grepl("^.*\\.csv$", filename[1])) {
+  } else if (grepl("^.*\\.csv$", filename[1], ignore.case = TRUE)) {
     "csv"
-  } else if (grepl("^.*\\.gpkg$", filename[1])) {
+  } else if (grepl("^.*\\.gpkg$", filename[1], ignore.case = TRUE)) {
     "gpkg"
   } else {
     stop("Filetype not detected: ", filename[1])
@@ -49,10 +49,12 @@ detect_filetype = function(filename){
 
 #' Import any track object as an sf object
 #' 
+#' @export
 #' @param filename name of track file
 #' @param type chr, declares what the data format is (gpx, csv, ...)
 #' @param ... additional params to import_*
-import_tracks = function(filename, type = detect_filetype(filename), ...){
+import_tracks = function(filename = system.file("ex_data/cape_cod_complicated.GPX", package = "drifter"),
+                         type = detect_filetype(filename), ...){
   x = switch(type, 
              "gpx" = import_gpx(filename, ...)[["tracks"]],
              "csv" = import_csv(filename, ...),
@@ -64,6 +66,7 @@ import_tracks = function(filename, type = detect_filetype(filename), ...){
 
 #' function to deal with time column formatting
 #' 
+#' @export
 #' @param x sf table
 #' @param coords date_time coordinate column name
 #' @param tz time zone
