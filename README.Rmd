@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 -   [xml2](https://CRAN.R-project.org/package=xml2)
 -   [readr](https://CRAN.R-project.org/package=readr)
 -   [lubridate](https://CRAN.R-project.org/package=lubridate)
+-   [purrr](https://CRAN.R-project.org/package=purrr)
 
 ### Suggested/Optional Packages
 -   [maree](https://github.com/BigelowLab/maree)
@@ -45,6 +46,92 @@ suppressPackageStartupMessages(
 # drift_tibble = read_gpx("inst/ex_data/cape_cod_complicated.GPX")
 drift_sf = import_gpx("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
 
+tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/TBI_drifts.GPX",
+                   form = "sf") |>
+  purrr::pluck("tracks")
+tbi_2 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts_18_04_2025.GPX",
+                 form = "sf") |>
+  purrr::pluck("tracks")
+tbi = dplyr::bind_rows(tbi_1, tbi_2)
+
 ```
 
+### Plotting the coastline
+```{r}
+mecoast = get_bbox("mecoast")
+sf::sf_use_s2(F)
+me_coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
+  sf::st_simplify() |>
+  sf::st_crop(mecoast)
+
+me_coast_plot = ggplot() +
+  geom_sf(data = me_coastline, fill = "tan") +
+  geom_sf(data = tbi, aes(color = Name)) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("Red Drifter",
+                                "Blue Drifter",
+                                "White Drifter Trial 1 - Chandler Cove",
+                                "White Drifter Trial 2 - Chandler Cove",
+                                "White Drifter Trial 1 - St. George",
+                                "White Drifter Trial 2 - St. George"),
+                     values = alpha(c("red", "blue", "white", "gray25", "white", "gray25"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+me_coast_plot
+
+```
+
+
+### Look a little closer in Casco Bay and Chandler Cove
+```{r}
+coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
+  sf::st_simplify()
+
+casco = get_bbox("casco")
+sf::sf_use_s2(F)
+casco_coastline = coastline |>
+  sf::st_crop(casco)
+
+casco_plot = ggplot() +
+  geom_sf(data = casco_coastline, fill = "tan") +
+  geom_sf(data = tbi_1, aes(color = Name)) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("Red Drifter",
+                                "Blue Drifter",
+                                "White Drifter Trial 1",
+                                "White Drifter Trial 2"
+                                ),
+                     values = alpha(c("red", "blue", "white", "gray25"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+casco_plot
+
+chcv = get_bbox("chcv")
+sf::sf_use_s2(F)
+chcv_coastline = coastline |>
+  sf::st_crop(chcv)
+
+chcv_plot = ggplot() +
+  geom_sf(data = chcv_coastline, fill = "tan") +
+  geom_sf(data = tbi_1, aes(color = Name)) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("Red Drifter",
+                                "Blue Drifter",
+                                "White Drifter Trial 1",
+                                "White Drifter Trial 2"
+                                ),
+                     values = alpha(c("red", "blue", "white", "gray25"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+chcv_plot
+```
 

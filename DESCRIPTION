@@ -17,6 +17,7 @@ Imports:
   sf,
   xml2,
   readr,
-  lubridate
+  lubridate,
+  purrr
 Suggests:
   maree
