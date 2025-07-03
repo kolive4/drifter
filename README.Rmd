@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Installation
 
-```         
+```{r}         
 remotes::install_github("kolive4/drifter")
 ```
 
