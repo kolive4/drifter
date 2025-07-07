@@ -25,13 +25,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Installation
 
-```{r, warning=FALSE, echo=FALSE}         
+```{r, warning=FALSE, echo=FALSE, message=FALSE}         
 remotes::install_github("kolive4/drifter")
 ```
 
 ## Usage
 
-```{r libraries, warning=FALSE, echo=FALSE}
+```{r libraries, warning=FALSE, echo=FALSE, message=FALSE}
 suppressPackageStartupMessages(
   {
     library(sf)
@@ -71,7 +71,7 @@ farms = create_kelp_farm_polygons(kelp_farms_coords)
 ```
 
 ### Get coast shapefile
-```{r coastline, warning=FALSE}
+```{r coastline, warning=FALSE, message=FALSE}
 sf::sf_use_s2(F)
 coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
   sf::st_simplify()
