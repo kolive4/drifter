@@ -45,24 +45,23 @@ source("setup.R")
 
 ### Reading drift data
 ```{r examples, warning=FALSE}
-# drift_tibble = read_gpx("inst/ex_data/cape_cod_complicated.GPX")
-drift_sf = import_gpx("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
-
 tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_28_03_2025.GPX",
                    form = "sf") |>
   purrr::pluck("tracks") |>
   drift_speed()
+
 tbi_2 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_18_04_2025.GPX",
                  form = "sf") |>
   purrr::pluck("tracks") |>
   drift_speed()
+
 tbi_3 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_13_05_2025.GPX",
                    form = "sf") |>
   purrr::pluck("tracks") |>
   dplyr::filter(Name != "Red1: 13 MAY 2025") |>
   drift_speed()
-tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 
+tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 ```
 
 ### Read in kelp farm plots
@@ -79,7 +78,7 @@ coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp"
 
 ### Plotting the coastline
 All drifts conducted as a part of this project are plotted in this figure. Though they may be too small to see in their entirety, this figure shows the two locales where we focused our study. 
-```{r maine coast, warning=FALSE, message=FALSE}
+```{r maine coast, warning=FALSE, message=FALSE, echo=FALSE}
 mecoast = get_bbox("mecoast")
 sf::sf_use_s2(F)
 me_coastline = coastline |>
@@ -109,17 +108,19 @@ me_coast_plot
 
 ```
 
-### Plot explanations
+## Plot explanations
 The following figures show close ups of Chandler Cove, Casco Bay, Maine, USA, and Deep Cove, St. George River, Maine, USA. Kelp farm footprints are plotted in brown. All drifts conducted in this trial are represented by colored lines. A 100 m buffer around the drifts was created and then a convex hull wrapped around the buffers to create an area of interest. The depth at which a particle from the kelp farm would be corresponds to the fill color of the area of interest polygon. 
 
 This particle depth gradient is aimed at providing a rough estimate of where kelp particles might be in the water column at a given distance away from the kelp farms. The depth gradient is calculated based on the average drift speed, direction, and a constant sinking rate of 0.002 m/s. We recognize that the sinking rate might change as a particle crosses depth layers, but we use this to guide sampling efforts moving forward.
 
-## Chandler Cove 28-March-2025
-```{r chandler cove, warning=FALSE, message=FALSE}
+### Chandler Cove 28-March-2025
+```{r chandler cove, warning=FALSE, message=FALSE, echo=FALSE}
 chcv = get_bbox("chcv")
 sf::sf_use_s2(F)
 chcv_coastline = coastline |>
   sf::st_crop(chcv)
+cas_farms = farms |>
+  dplyr::filter(stringr::str_starts(name, "CAS"))
 
 tbi_1_area = drift_area(tbi_1, 100) 
 
@@ -133,12 +134,11 @@ chcv_area_plot = ggplot() +
   geom_sf(data = chcv_coastline, fill = "tan") +
   geom_stars(data = tbi_1_pd) +
   scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = farms |>
-            dplyr::filter(stringr::str_starts(name, "CAS")), fill = "brown") +
+  geom_sf(data = cas_farms, fill = "brown") +
   geom_sf(data = tbi_1_area, fill = NA, color = "green3", linewidth = 1) +
   geom_sf(data = tbi_1, aes(color = Name)) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(name = "", expand = c(0,0)) +
+  scale_y_continuous(name = "", expand = c(0,0)) +
   scale_color_manual(name = "Drifter",
                      labels = c("Red Drifter",
                                 "Blue Drifter",
@@ -152,8 +152,8 @@ chcv_area_plot = ggplot() +
 chcv_area_plot
 ```
 
-## Deep Cove 18-April-2025
-```{r deep cove 1, warning=FALSE, message=FALSE}
+### Deep Cove 18-April-2025
+```{r deep cove 1, warning=FALSE, message=FALSE, echo=FALSE}
 stgeo = get_bbox("stgeo")
 sf::sf_use_s2(F)
 stgeo_coastline = coastline |>
@@ -177,8 +177,8 @@ stgeo_area_plot = ggplot() +
             dplyr::filter(stringr::str_starts(name, "STG")), fill = "brown") +
   geom_sf(data = tbi_2_area, fill = NA, color = "green3", linewidth = 1) +
   geom_sf(data = tbi_2, aes(color = Name)) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(name = "", expand = c(0,0)) +
+  scale_y_continuous(name = "", expand = c(0,0)) +
   scale_color_manual(name = "Drifter",
                      labels = c("4/18 White Drifter Trial 1",
                                 "4/18 White Drifter Trial 2"
@@ -192,7 +192,7 @@ stgeo_area_plot
 ```
 
 ### Deep Cove 13-May-2025
-```{r deep cove 2, warning=FALSE, message=FALSE}
+```{r deep cove 2, warning=FALSE, message=FALSE, echo=FALSE}
 tbi_3_area = drift_area(tbi_3, 100)
 
 tbi_3_pd = particle_depth(area = tbi_3_area,
@@ -208,8 +208,8 @@ stgeo2_area_plot = ggplot() +
   geom_sf(data = stgeo_farms, fill = "brown") +
   geom_sf(data = tbi_3_area, fill = NA, color = "green3", linewidth = 1) +
   geom_sf(data = tbi_3, aes(color = Name)) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(name = "", expand = c(0,0)) +
+  scale_y_continuous(name = "", expand = c(0,0)) +
   scale_color_manual(name = "Drifter",
                      labels = c("5/13 Red Drifter Trial 1",
                                 "5/13 Red Drifter Trial 2",
