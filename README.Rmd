@@ -39,33 +39,55 @@ suppressPackageStartupMessages(
     library(drifter)
   }
 )
+
+source("setup.R")
 ```
 
-### Reading example data
+### Reading example drift data
 ```{r examples}
 # drift_tibble = read_gpx("inst/ex_data/cape_cod_complicated.GPX")
 drift_sf = import_gpx("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
 
-tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/TBI_drifts.GPX",
+tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_28_03_2025.GPX",
                    form = "sf") |>
-  purrr::pluck("tracks")
-tbi_2 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts_18_04_2025.GPX",
+  purrr::pluck("tracks") |>
+  drift_speed()
+tbi_2 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_18_04_2025.GPX",
                  form = "sf") |>
-  purrr::pluck("tracks")
-tbi = dplyr::bind_rows(tbi_1, tbi_2)
+  purrr::pluck("tracks") |>
+  drift_speed()
+tbi_3 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_13_05_2025.GPX",
+                   form = "sf") |>
+  purrr::pluck("tracks") |>
+  dplyr::filter(Name != "Red1: 13 MAY 2025") |>
+  drift_speed()
+tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 
 ```
+
+### Read in and plot kelp farm plots
+```{r}
+farms = create_kelp_farm_polygons(kelp_farms_coords)
+```
+
+### Get coast shapefile
+```{r}
+sf::sf_use_s2(F)
+coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
+  sf::st_simplify()
+```
+
 
 ### Plotting the coastline
 ```{r}
 mecoast = get_bbox("mecoast")
 sf::sf_use_s2(F)
-me_coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
-  sf::st_simplify() |>
+me_coastline = coastline |>
   sf::st_crop(mecoast)
 
 me_coast_plot = ggplot() +
   geom_sf(data = me_coastline, fill = "tan") +
+  geom_sf(data = farms, fill = "yellowgreen") +
   geom_sf(data = tbi, aes(color = Name)) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
@@ -75,8 +97,11 @@ me_coast_plot = ggplot() +
                                 "White Drifter Trial 1 - Chandler Cove",
                                 "White Drifter Trial 2 - Chandler Cove",
                                 "White Drifter Trial 1 - St. George",
-                                "White Drifter Trial 2 - St. George"),
-                     values = alpha(c("red", "blue", "white", "gray25", "white", "gray25"), 0.5)) +
+                                "White Drifter Trial 2 - St. George",
+                                "Red Drifter Trial 1 - St. George",
+                                "Red Drifter Trial 2 - St. George",
+                                "Red Drifter Trial 3 - St. George"),
+                     values = alpha(c("red2", "blue", "white", "gray25", "white", "gray25", "red1", "red3", "red4"), 0.5)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
@@ -87,13 +112,12 @@ me_coast_plot
 
 ### Look a little closer in Casco Bay and Chandler Cove
 ```{r}
-coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
-  sf::st_simplify()
-
 casco = get_bbox("casco")
 sf::sf_use_s2(F)
 casco_coastline = coastline |>
   sf::st_crop(casco)
+cas_farms = farms |>
+  dplyr::filter(stringr::str_starts(name, "CAS"))
 
 casco_plot = ggplot() +
   geom_sf(data = casco_coastline, fill = "tan") +
@@ -111,14 +135,30 @@ casco_plot = ggplot() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 casco_plot
+```
 
+### Chandler Cove
+```{r}
 chcv = get_bbox("chcv")
 sf::sf_use_s2(F)
 chcv_coastline = coastline |>
   sf::st_crop(chcv)
 
-chcv_plot = ggplot() +
+tbi_1_area = drift_area(tbi_1, 100) 
+
+tbi_1_pd = particle_depth(area = tbi_1_area,
+                          sink_rate = 0.002,
+                          start_depth = 2,
+                          max_depth = 13,
+                          farms = cas_farms)
+
+chcv_area_plot = ggplot() +
   geom_sf(data = chcv_coastline, fill = "tan") +
+  geom_stars(data = tbi_1_pd) +
+  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
+  geom_sf(data = farms |>
+            dplyr::filter(stringr::str_starts(name, "CAS")), fill = "brown") +
+  geom_sf(data = tbi_1_area, fill = NA, color = "green3", linewidth = 1) +
   geom_sf(data = tbi_1, aes(color = Name)) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
@@ -132,6 +172,75 @@ chcv_plot = ggplot() +
   theme_bw() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
-chcv_plot
+chcv_area_plot
 ```
 
+### Look a little closer at Deep Cove
+```{r}
+stgeo = get_bbox("stgeo")
+sf::sf_use_s2(F)
+stgeo_coastline = coastline |>
+  sf::st_crop(stgeo)
+stgeo_farms = farms |>
+  dplyr::filter(stringr::str_starts(name, "STG"))
+
+tbi_2_area = drift_area(tbi_2, 100)
+
+tbi_2_pd = particle_depth(area = tbi_2_area,
+                          sink_rate = 0.002,
+                          start_depth = 2,
+                          max_depth = 13,
+                          farms = stgeo_farms)
+
+stgeo_area_plot = ggplot() +
+  geom_sf(data = stgeo_coastline, fill = "tan") +
+  geom_stars(data = tbi_2_pd) +
+  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
+  geom_sf(data = farms |>
+            dplyr::filter(stringr::str_starts(name, "STG")), fill = "brown") +
+  geom_sf(data = tbi_2_area, fill = NA, color = "green3", linewidth = 1) +
+  geom_sf(data = tbi_2, aes(color = Name)) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("4/18 White Drifter Trial 1",
+                                "4/18 White Drifter Trial 2"
+                                ),
+                     values = alpha(c("white", "gray25"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+stgeo_area_plot
+
+```
+
+### Look a little closer at Deep Cove round 2
+```{r}
+tbi_3_area = drift_area(tbi_3, 100)
+
+tbi_3_pd = particle_depth(area = tbi_3_area,
+                          sink_rate = 0.002,
+                          start_depth = 2,
+                          max_depth = 13,
+                          farms = stgeo_farms)
+
+stgeo2_area_plot = ggplot() +
+  geom_sf(data = stgeo_coastline, fill = "tan") +
+  geom_stars(data = tbi_3_pd) +
+  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
+  geom_sf(data = stgeo_farms, fill = "brown") +
+  geom_sf(data = tbi_3_area, fill = NA, color = "green3", linewidth = 1) +
+  geom_sf(data = tbi_3, aes(color = Name)) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("5/13 Red Drifter Trial 1",
+                                "5/13 Red Drifter Trial 2",
+                                "5/13 Red Drifter Trial 3"
+                                ),
+                     values = alpha(c("red1", "red3", "red4"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+stgeo2_area_plot
+```

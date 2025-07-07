@@ -1,5 +1,5 @@
 # data
-data/
+inst/
 *.GPX
 
 # History files

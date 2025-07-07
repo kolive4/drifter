@@ -189,3 +189,108 @@ leaflet_drifter = function(x){
     #leaflet::addCircleMarkers(data = x) |>
     #leaflet::addPopups(data = x, popup = htmltools::htmlEscape(x$order))
 }
+
+
+
+#' Function to calculate drift speed given a table of drifter points
+#' @param x tbl of drift data that has point locations and time
+#' @return tbl of drift data but with a new column of calculated speed (m/s) and great circle distance
+drift_speed = function(x) {
+  if (FALSE) {
+    x = tbl = tbi_1
+  }
+  x |>
+    dplyr::group_by(Name) |>
+    dplyr::group_map(function(tbl, key){
+      coords_start = st_coordinates(slice(tbl, -n()))
+      coords_end   = st_coordinates(slice(tbl, -1))
+      # distance
+      d = sf::st_distance(dplyr::slice(tbl, -1), dplyr::slice(tbl, -dplyr::n()), by_element = TRUE) |>
+        as.vector()
+      # elapsed time
+      e_time = dplyr::slice(tbl, -1) |> dplyr::pull(Time) |> as.numeric() - 
+        dplyr::slice(tbl, -dplyr::n()) |> dplyr::pull(Time) |> as.numeric() 
+      #direction in degrees
+      bearings = geosphere::bearing(coords_start, coords_end)
+      
+      tbl |>
+        dplyr::slice(-dplyr::n()) |>
+        dplyr::mutate(speed = d / e_time, 
+                      distance = d,
+                      direction = (bearings + 360) %% 360)
+    }, .keep = TRUE) |>
+    dplyr::bind_rows()
+}
+
+#' Function that given a GPX file of track points, will output the convex hull polygon of interest
+#' @param x sf, drift data
+#' @param d num, buffer distance in meters around the track
+#' @return sf, a convex hull polygon object
+drift_area = function(x, d){
+  if(FALSE){
+    tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_28_03_2025.GPX",
+                       form = "sf") |>
+      purrr::pluck("tracks") |>
+      drift_speed()
+    x = tbi_1
+    d = 100
+  }
+  stats = x |>
+    summarise(
+      avg_speed = mean(speed, na.rm = TRUE),
+      avg_direction = mean(direction, na.rm = TRUE)
+    ) |>
+    st_drop_geometry()
+  
+  sf::sf_use_s2(T)
+  x_area = x |>
+    sf::st_union() |>
+    sf::st_buffer(dist = units::as_units(d, "m")) |>
+    sf::st_convex_hull() |>
+    st_sf() |>
+    dplyr::mutate(
+      avg_speed = stats$avg_speed,
+      avg_direction = stats$avg_direction
+    )
+  
+  return(x_area)
+}
+
+#' Function that when given a polygon with an averaged speed and direction and a sinking rate, shows what depth kelp particles are at at a given distance within a polygon
+#' @param area sf polygon, area polygon of interest 
+#' @param sink_rate num, rate of sinking in m/s
+#' @param start_depth num, kelp planting depth in m
+#' @param max_depth num, static depth in m
+#' @param farms sf polygon, kelp farm
+#' @return stars object with particle depths
+particle_depth = function(area, sink_rate, start_depth, max_depth, farms){
+  if (FALSE) {
+    area = tbi_3_area
+    sink_rate = 0.0005
+    start_depth = 2
+    max_depth = 13
+    farms = farms |>
+      dplyr::filter(stringr::str_starts(name, "STG"))
+  }
+  
+  crs_proj = 32619
+  area_proj = st_transform(area, crs_proj)
+  farms_proj = st_transform(farms, crs_proj)
+  
+  grid_pts = st_make_grid(area_proj, cellsize = 1, what = "centers") |>
+    st_sf() |>
+    st_intersection(area_proj)
+  
+  grid_pts$distance = st_distance(grid_pts, farms_proj) |>
+    apply(1, min)
+  
+  h_v = area$avg_speed # drift speed (m/s)
+  
+  grid_pts$depth = -pmin(grid_pts$distance / sqrt((h_v^2) + (sink_rate^2)) * sink_rate + start_depth, max_depth)
+  
+  depth_stars = st_rasterize(grid_pts["depth"]) |>
+    st_crop(area_proj) |>
+    st_warp(crs = 4326)
+  
+  return(depth_stars)
+}
