@@ -3,7 +3,7 @@ title: "drifter"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -25,13 +25,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Installation
 
-```{r}         
+```{r, warning=FALSE, echo=FALSE}         
 remotes::install_github("kolive4/drifter")
 ```
 
 ## Usage
 
-```{r libraries}
+```{r libraries, warning=FALSE, echo=FALSE}
 suppressPackageStartupMessages(
   {
     library(sf)
@@ -43,8 +43,8 @@ suppressPackageStartupMessages(
 source("setup.R")
 ```
 
-### Reading example drift data
-```{r examples}
+### Reading drift data
+```{r examples, warning=FALSE}
 # drift_tibble = read_gpx("inst/ex_data/cape_cod_complicated.GPX")
 drift_sf = import_gpx("inst/ex_data/cape_cod_complicated.GPX", form = "sf")
 
@@ -65,21 +65,21 @@ tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 
 ```
 
-### Read in and plot kelp farm plots
-```{r}
+### Read in kelp farm plots
+```{r kelp farms, warning=FALSE}
 farms = create_kelp_farm_polygons(kelp_farms_coords)
 ```
 
 ### Get coast shapefile
-```{r}
+```{r coastline, warning=FALSE}
 sf::sf_use_s2(F)
 coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp") |>
   sf::st_simplify()
 ```
 
-
 ### Plotting the coastline
-```{r}
+All drifts conducted as a part of this project are plotted in this figure. Though they may be too small to see in their entirety, this figure shows the two locales where we focused our study. 
+```{r maine coast, warning=FALSE, message=FALSE}
 mecoast = get_bbox("mecoast")
 sf::sf_use_s2(F)
 me_coastline = coastline |>
@@ -109,36 +109,13 @@ me_coast_plot
 
 ```
 
+### Plot explanations
+The following figures show close ups of Chandler Cove, Casco Bay, Maine, USA, and Deep Cove, St. George River, Maine, USA. Kelp farm footprints are plotted in brown. All drifts conducted in this trial are represented by colored lines. A 100 m buffer around the drifts was created and then a convex hull wrapped around the buffers to create an area of interest. The depth at which a particle from the kelp farm would be corresponds to the fill color of the area of interest polygon. 
 
-### Look a little closer in Casco Bay and Chandler Cove
-```{r}
-casco = get_bbox("casco")
-sf::sf_use_s2(F)
-casco_coastline = coastline |>
-  sf::st_crop(casco)
-cas_farms = farms |>
-  dplyr::filter(stringr::str_starts(name, "CAS"))
+This particle depth gradient is aimed at providing a rough estimate of where kelp particles might be in the water column at a given distance away from the kelp farms. The depth gradient is calculated based on the average drift speed, direction, and a constant sinking rate of 0.002 m/s. We recognize that the sinking rate might change as a particle crosses depth layers, but we use this to guide sampling efforts moving forward.
 
-casco_plot = ggplot() +
-  geom_sf(data = casco_coastline, fill = "tan") +
-  geom_sf(data = tbi_1, aes(color = Name)) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("Red Drifter",
-                                "Blue Drifter",
-                                "White Drifter Trial 1",
-                                "White Drifter Trial 2"
-                                ),
-                     values = alpha(c("red", "blue", "white", "gray25"), 0.5)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-casco_plot
-```
-
-### Chandler Cove
-```{r}
+## Chandler Cove 28-March-2025
+```{r chandler cove, warning=FALSE, message=FALSE}
 chcv = get_bbox("chcv")
 sf::sf_use_s2(F)
 chcv_coastline = coastline |>
@@ -175,8 +152,8 @@ chcv_area_plot = ggplot() +
 chcv_area_plot
 ```
 
-### Look a little closer at Deep Cove
-```{r}
+## Deep Cove 18-April-2025
+```{r deep cove 1, warning=FALSE, message=FALSE}
 stgeo = get_bbox("stgeo")
 sf::sf_use_s2(F)
 stgeo_coastline = coastline |>
@@ -214,8 +191,8 @@ stgeo_area_plot
 
 ```
 
-### Look a little closer at Deep Cove round 2
-```{r}
+### Deep Cove 13-May-2025
+```{r deep cove 2, warning=FALSE, message=FALSE}
 tbi_3_area = drift_area(tbi_3, 100)
 
 tbi_3_pd = particle_depth(area = tbi_3_area,
