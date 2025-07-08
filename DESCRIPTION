@@ -21,3 +21,5 @@ Imports:
   purrr
 Suggests:
   maree
+Depends:
+  R (≥ 4.1.0)

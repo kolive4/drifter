@@ -41,6 +41,8 @@ kelp_farms_coords <- list(
 )
 
 #' Function to create polygons out of the kelp farm coords above
+#' 
+#' @export
 #' @param x list of kelp farms and their coordinates
 #' @param crs coordinate reference system
 #' @return list of kelp farm polygons

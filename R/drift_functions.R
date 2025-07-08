@@ -1,5 +1,6 @@
-#' Function for mapping
+#' Function for mapping the coastline
 #' 
+#' @export
 #' @param data coastline object from rnaturalearth
 #' @param bb bounding box coordinates for cropping
 #' @param ... arguments passable to geom_sf
@@ -12,18 +13,20 @@ geom_coastline = function(coast = rnaturalearth::ne_coastline(scale = "small", r
 }
 
 #' Function to convert gpx track to tibble for manipulation
-#' @param gpx gpx object
 #' 
+#' @export
+#' @param gpx gpx object
 #' @return tibble version of gpx
 gpx_to_tibble = function(gpx) {
   trax_tibble = gpx[[2]][[1]] |>
-    as_tibble()
+    tibble::as_tibble()
   trax_tibble
 }
 
 #' Function to convert the gpx track to an sf object for plotting
-#' @param trax_tibble gpx object as a tibble
 #' 
+#' @export
+#' @param trax_tibble gpx object as a tibble
 #' @return sf object of gpx track
 gpx_to_sf = function(trax_tibble) {
   trax_sf = trax_tibble |>
@@ -31,13 +34,9 @@ gpx_to_sf = function(trax_tibble) {
                             "Latitude"), crs = 4326)
   trax_sf
 }
-
-
-
 load_cc1 = function(){
- read_sf("/mnt/s1/projects/ecocast/projects/koliveira/gpx/cc1_drift_centroid.gpkg")
+ sf::read_sf("/mnt/s1/projects/ecocast/projects/koliveira/gpx/cc1_drift_centroid.gpkg")
 }
-
 test_cc1 = function(x = load_cc1()){
   ctr = trial_centroid(x)
   xx = split(df, df$drifter) |>
@@ -45,11 +44,7 @@ test_cc1 = function(x = load_cc1()){
       dplyr::arrange(x, Time) |>
       dplyr::mutate(order = seq_len(n()))
     })
-
   x = xx[[1]]
-  
-  
-
   dx = sapply(seq(from = 2, to = nrow(x)),
               function(i){
                 sf::st_distance(slice(x,i-1), slice(x,i))
@@ -58,11 +53,7 @@ test_cc1 = function(x = load_cc1()){
                 function(i){
                   sf::st_distance(slice(ctr,i-1), slice(ctr,i))
                 })
-  
-  
-  
 }
-
 plot_track = function(x, cex = 0.5){
   plot(st_geometry(x), axes = T, reset = F, type = "l")
   text(x, labels = x$order, cex = cex)
@@ -70,8 +61,9 @@ plot_track = function(x, cex = 0.5){
 
 
 
-#' function to find centroid of drifts
+#' Function to find centroid of drifts
 #' 
+#' @export
 #' @param df dataframe of gpx points of drifters for one trial
 #' @return sf centroid linestring
 trial_centroid = function(df = load_cc1()) {
@@ -94,7 +86,7 @@ trial_centroid = function(df = load_cc1()) {
   
   x = xx[[1]] |>
     dplyr::rowwise() |>
-    group_map(function(tbl, key, b2, b3){
+    dplyr::group_map(function(tbl, key, b2, b3){
       ib2 = closest_time(tbl$Time, b2$Time)
       ib3 = closest_time(tbl$Time, b3$Time)
       
@@ -116,6 +108,7 @@ trial_centroid = function(df = load_cc1()) {
 
 #' Function to assign colors to centroid points
 #' 
+#' @export
 #' @param x centroid points sf object
 #' @return centroid points sf object with colors
 centroid_colors = function(x){
@@ -128,6 +121,7 @@ centroid_colors = function(x){
 
 #' Function to assign a size to centroid points
 #' 
+#' @export
 #' @param x centroid points sf object
 #' @return centroid points sf object with point sizes
 centroid_sizes = function(x){
@@ -140,6 +134,7 @@ centroid_sizes = function(x){
 
 #' Function to add an A and B label to first and last point of centroid line
 #' 
+#' @export
 #' @param x centroid points sf object
 #' @return centroid points sf object with A and B label on first and last points
 centroid_labels = function(x){
@@ -152,6 +147,7 @@ centroid_labels = function(x){
 
 #' Function to calculate distance between start and end points
 #' 
+#' @export
 #' @param x centroid points df
 #' @return distance between start and end points
 centroid_distance = function(x){
@@ -179,6 +175,10 @@ centroid_distance = function(x){
 
 
 #' Draw a drifter as a leaflet polyline
+#' 
+#' @export
+#' @param x sf object, drifter track
+#' @return leaflet map with drifter track
 leaflet_drifter = function(x){
   y = sf::st_union(x) |>
     sf::st_cast("LINESTRING")
@@ -193,6 +193,8 @@ leaflet_drifter = function(x){
 
 
 #' Function to calculate drift speed given a table of drifter points
+#' 
+#' @export
 #' @param x tbl of drift data that has point locations and time
 #' @return tbl of drift data but with a new column of calculated speed (m/s) and great circle distance
 drift_speed = function(x) {
@@ -202,8 +204,8 @@ drift_speed = function(x) {
   x |>
     dplyr::group_by(Name) |>
     dplyr::group_map(function(tbl, key){
-      coords_start = st_coordinates(slice(tbl, -n()))
-      coords_end   = st_coordinates(slice(tbl, -1))
+      coords_start = sf::st_coordinates(dplyr::slice(tbl, -n()))
+      coords_end   = sf::st_coordinates(dplyr::slice(tbl, -1))
       # distance
       d = sf::st_distance(dplyr::slice(tbl, -1), dplyr::slice(tbl, -dplyr::n()), by_element = TRUE) |>
         as.vector()
@@ -223,6 +225,8 @@ drift_speed = function(x) {
 }
 
 #' Function that given a GPX file of track points, will output the convex hull polygon of interest
+#' 
+#' @export
 #' @param x sf, drift data
 #' @param d num, buffer distance in meters around the track
 #' @return sf, a convex hull polygon object
@@ -236,7 +240,7 @@ drift_area = function(x, d){
     d = 100
   }
   stats = x |>
-    summarise(
+    sf::summarise(
       avg_speed = mean(speed, na.rm = TRUE),
       avg_direction = mean(direction, na.rm = TRUE)
     ) |>
@@ -247,7 +251,7 @@ drift_area = function(x, d){
     sf::st_union() |>
     sf::st_buffer(dist = units::as_units(d, "m")) |>
     sf::st_convex_hull() |>
-    st_sf() |>
+    sf::st_sf() |>
     dplyr::mutate(
       avg_speed = stats$avg_speed,
       avg_direction = stats$avg_direction
@@ -257,6 +261,8 @@ drift_area = function(x, d){
 }
 
 #' Function that when given a polygon with an averaged speed and direction and a sinking rate, shows what depth kelp particles are at at a given distance within a polygon
+#' 
+#' @export
 #' @param area sf polygon, area polygon of interest 
 #' @param sink_rate num, rate of sinking in m/s
 #' @param start_depth num, kelp planting depth in m
@@ -274,23 +280,23 @@ particle_depth = function(area, sink_rate, start_depth, max_depth, farms){
   }
   
   crs_proj = 32619
-  area_proj = st_transform(area, crs_proj)
-  farms_proj = st_transform(farms, crs_proj)
+  area_proj = sf::st_transform(area, crs_proj)
+  farms_proj = sf::st_transform(farms, crs_proj)
   
-  grid_pts = st_make_grid(area_proj, cellsize = 1, what = "centers") |>
-    st_sf() |>
-    st_intersection(area_proj)
+  grid_pts = sf::st_make_grid(area_proj, cellsize = 1, what = "centers") |>
+    sf::st_sf() |>
+    sf::st_intersection(area_proj)
   
-  grid_pts$distance = st_distance(grid_pts, farms_proj) |>
+  grid_pts$distance = sf::st_distance(grid_pts, farms_proj) |>
     apply(1, min)
   
   h_v = area$avg_speed # drift speed (m/s)
   
   grid_pts$depth = -pmin(grid_pts$distance / sqrt((h_v^2) + (sink_rate^2)) * sink_rate + start_depth, max_depth)
   
-  depth_stars = st_rasterize(grid_pts["depth"]) |>
-    st_crop(area_proj) |>
-    st_warp(crs = 4326)
+  depth_stars = stars::st_rasterize(grid_pts["depth"]) |>
+    stars::st_crop(area_proj) |>
+    stars::st_warp(crs = 4326)
   
   return(depth_stars)
 }
