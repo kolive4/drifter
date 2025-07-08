@@ -59,7 +59,10 @@ import_gpx = function(filename = "cape_cod_complicated.GPX",
   
   nms = sapply(xx, xml2::xml_name)
   tracks = gpx.extract_tracks(xx[nms == "trk"]) |>
-    dplyr::mutate(Time = as.POSIXct(.data$Time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
+    dplyr::mutate(Time = lubridate::parse_date_time(.data$Time, 
+                                                    c("YmdHMOS", "YmdHMS"), 
+                                                    tz = "UTC"))
+    #dplyr::mutate(Time = as.POSIXct(.data$Time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
   if (tolower(form) == "sf") tracks = sf::st_as_sf(tracks,
                                                    coords = c("Longitude", "Latitude"),
                                                    crs = crs)

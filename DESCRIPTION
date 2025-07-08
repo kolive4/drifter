@@ -20,6 +20,6 @@ Imports:
   lubridate,
   purrr
 Suggests:
-  maree
-Depends:
-  R (≥ 4.1.0)
+  maree,
+  rnaturalearth
+Depends: R (>= 4.1.0)
