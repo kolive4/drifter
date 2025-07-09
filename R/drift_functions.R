@@ -1,13 +1,13 @@
 #' Function for mapping the coastline
 #' 
 #' @export
-#' @param data coastline object from rnaturalearth
+#' @param coast coastline object from rnaturalearth
 #' @param bb bounding box coordinates for cropping
 #' @param ... arguments passable to geom_sf
 #' @return x, ggplot layer
 
 geom_coastline = function(coast = rnaturalearth::ne_coastline(scale = "small", returnclass = "sf"), bb = NULL, ...) {
-  x = ggplot2::geom_sf(data = sf::st_crop(coast, bb), aes(), colour = "black")
+  x = ggplot2::geom_sf(data = sf::st_crop(coast, bb), ggplot2::aes(), colour = "black")
   
   x
 }
@@ -34,29 +34,30 @@ gpx_to_sf = function(trax_tibble) {
                             "Latitude"), crs = 4326)
   trax_sf
 }
-load_cc1 = function(){
- sf::read_sf("/mnt/s1/projects/ecocast/projects/koliveira/gpx/cc1_drift_centroid.gpkg")
-}
-test_cc1 = function(x = load_cc1()){
-  ctr = trial_centroid(x)
-  xx = split(df, df$drifter) |>
-    lapply(function(x){
-      dplyr::arrange(x, Time) |>
-      dplyr::mutate(order = seq_len(n()))
-    })
-  x = xx[[1]]
-  dx = sapply(seq(from = 2, to = nrow(x)),
-              function(i){
-                sf::st_distance(slice(x,i-1), slice(x,i))
-              })
-  dctr = sapply(seq(from = 2, to = nrow(ctr)),
-                function(i){
-                  sf::st_distance(slice(ctr,i-1), slice(ctr,i))
-                })
-}
+
+# load_cc1 = function(){
+#  sf::read_sf("/mnt/s1/projects/ecocast/projects/koliveira/gpx/cc1_drift_centroid.gpkg")
+# }
+# test_cc1 = function(x = load_cc1()){
+#   ctr = trial_centroid(x)
+#   xx = split(df, df$drifter) |>
+#     lapply(function(x){
+#       dplyr::arrange(x, Time) |>
+#       dplyr::mutate(order = seq_len(dplyr::n()))
+#     })
+#   x = xx[[1]]
+#   dx = sapply(seq(from = 2, to = nrow(x)),
+#               function(i){
+#                 sf::st_distance(dplyr::slice(x,i-1), dplyr::slice(x,i))
+#               })
+#   dctr = sapply(seq(from = 2, to = nrow(ctr)),
+#                 function(i){
+#                   sf::st_distance(dplyr::slice(ctr,i-1), dplyr::slice(ctr,i))
+#                 })
+# }
 plot_track = function(x, cex = 0.5){
-  plot(st_geometry(x), axes = T, reset = F, type = "l")
-  text(x, labels = x$order, cex = cex)
+  plot(sf::st_geometry(x), axes = T, reset = F, type = "l")
+  graphics::text(x, labels = x$order, cex = cex)
 }
 
 
@@ -66,11 +67,11 @@ plot_track = function(x, cex = 0.5){
 #' @export
 #' @param df dataframe of gpx points of drifters for one trial
 #' @return sf centroid linestring
-trial_centroid = function(df = load_cc1()) {
+trial_centroid = function(df = import_tracks()) {
   xx = split(df, df$drifter) |>
     lapply(function(x){
-      dplyr::arrange(x, Time)|>
-        dplyr::mutate(order = seq_len(n()), .before = 1)
+      dplyr::arrange(x, .data$Time)|>
+        dplyr::mutate(order = seq_len(dplyr::n()), .before = 1)
     })
   min_t = sapply(xx, function(x){
     min(x$Time)
@@ -154,7 +155,7 @@ centroid_distance = function(x){
   
  sapply(seq(from = 2, to = nrow(x)),
               function(i){
-                sf::st_distance(slice(x,i-1), slice(x,i))
+                sf::st_distance(dplyr::slice(x,i-1), dplyr::slice(x,i))
               }) |>
     sum()
   
@@ -202,16 +203,16 @@ drift_speed = function(x) {
     x = tbl = tbi_1
   }
   x |>
-    dplyr::group_by(Name) |>
+    dplyr::group_by(.data$Name) |>
     dplyr::group_map(function(tbl, key){
-      coords_start = sf::st_coordinates(dplyr::slice(tbl, -n()))
+      coords_start = sf::st_coordinates(dplyr::slice(tbl, -dplyr::n()))
       coords_end   = sf::st_coordinates(dplyr::slice(tbl, -1))
       # distance
       d = sf::st_distance(dplyr::slice(tbl, -1), dplyr::slice(tbl, -dplyr::n()), by_element = TRUE) |>
         as.vector()
       # elapsed time
-      e_time = dplyr::slice(tbl, -1) |> dplyr::pull(Time) |> as.numeric() - 
-        dplyr::slice(tbl, -dplyr::n()) |> dplyr::pull(Time) |> as.numeric() 
+      e_time = dplyr::slice(tbl, -1) |> dplyr::pull(.data$Time) |> as.numeric() - 
+        dplyr::slice(tbl, -dplyr::n()) |> dplyr::pull(.data$Time) |> as.numeric() 
       #direction in degrees
       bearings = geosphere::bearing(coords_start, coords_end)
       
@@ -240,11 +241,11 @@ drift_area = function(x, d){
     d = 100
   }
   stats = x |>
-    sf::summarise(
-      avg_speed = mean(speed, na.rm = TRUE),
-      avg_direction = mean(direction, na.rm = TRUE)
+    dplyr::summarise(
+      avg_speed = mean(.data$speed, na.rm = TRUE),
+      avg_direction = mean(.data$direction, na.rm = TRUE)
     ) |>
-    st_drop_geometry()
+    sf::st_drop_geometry()
   
   sf::sf_use_s2(T)
   x_area = x |>
@@ -295,7 +296,7 @@ particle_depth = function(area, sink_rate, start_depth, max_depth, farms){
   grid_pts$depth = -pmin(grid_pts$distance / sqrt((h_v^2) + (sink_rate^2)) * sink_rate + start_depth, max_depth)
   
   depth_stars = stars::st_rasterize(grid_pts["depth"]) |>
-    stars::st_crop(area_proj) |>
+    sf::st_crop(area_proj) |>
     stars::st_warp(crs = 4326)
   
   return(depth_stars)

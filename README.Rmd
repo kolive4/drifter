@@ -39,8 +39,6 @@ suppressPackageStartupMessages(
     library(drifter)
   }
 )
-
-source("setup.R")
 ```
 
 ### Reading drift data
@@ -65,8 +63,8 @@ tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 ```
 
 ### Read in kelp farm plots
-```{r kelp farms, warning=FALSE}
-farms = create_kelp_farm_polygons(kelp_farms_coords)
+```{r kelp_farms, warning=FALSE}
+farms = create_kelp_farm_polygons()
 ```
 
 ### Get coast shapefile
@@ -78,7 +76,7 @@ coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp"
 
 ### Plotting the coastline
 All drifts conducted as a part of this project are plotted in this figure. Though they may be too small to see in their entirety, this figure shows the two locales where we focused our study. 
-```{r maine coast, warning=FALSE, message=FALSE, echo=FALSE}
+```{r maine_coast, warning=FALSE, message=FALSE, echo=FALSE}
 mecoast = get_bbox("mecoast")
 sf::sf_use_s2(F)
 me_coastline = coastline |>
@@ -91,16 +89,25 @@ me_coast_plot = ggplot() +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
   scale_color_manual(name = "Drifter",
-                     labels = c("Red Drifter",
-                                "Blue Drifter",
-                                "White Drifter Trial 1 - Chandler Cove",
-                                "White Drifter Trial 2 - Chandler Cove",
-                                "White Drifter Trial 1 - St. George",
-                                "White Drifter Trial 2 - St. George",
-                                "Red Drifter Trial 1 - St. George",
-                                "Red Drifter Trial 2 - St. George",
-                                "Red Drifter Trial 3 - St. George"),
-                     values = alpha(c("red2", "blue", "white", "gray25", "white", "gray25", "red1", "red3", "red4"), 0.5)) +
+                     labels = c("Red1 Drifter: 28 MAR 2025"                    = "Red Drifter Trial 2 - Chandler Cove",
+                                "Red2 Drifter: 28 MAR 2025"                    = "Blue Drifter Trial 2 - Chandler Cove",
+                                "White drifter 28 MAR 2025 001"                = "White Drifter Trial 1 - Chandler Cove",
+                                "White drifter 28 MAR 2025 11:15 002"          = "White Drifter Trial 2 - Chandler Cove",
+                                "White Drifter Drift 1: 18 APR 2025 10:48"     = "White Drifter Trial 1 - St. George",
+                                "White Drifter Drift 2: 18 APR 2025 10:48 001" = "White Drifter Trial 2 - St. George",
+                                "Red1_drift1: 13 MAY 2025 12:53"               = "Red Drifter Trial 1 - St. George",
+                                "Red1_drift2: 13 MAY 2025 12:53"               = "Red Drifter Trial 2 - St. George",
+                                "Red1_drift3: 13 MAY 2025"                     = "Red Drifter Trial 3 - St. George"),
+                     values = alpha(c("Red1 Drifter: 28 MAR 2025"                    = "red2", 
+                                      "Red2 Drifter: 28 MAR 2025"                    = "blue", 
+                                      "White drifter 28 MAR 2025 001"                = "white", 
+                                      "White drifter 28 MAR 2025 11:15 002"          = "gray25", 
+                                      "White Drifter Drift 1: 18 APR 2025 10:48"     = "white", 
+                                      "White Drifter Drift 2: 18 APR 2025 10:48 001" = "gray25", 
+                                      "Red1_drift1: 13 MAY 2025 12:53"               = "red1", 
+                                      "Red1_drift2: 13 MAY 2025 12:53"               = "red3", 
+                                      "Red1_drift3: 13 MAY 2025"                     = "red4"), 
+                                    0.5)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
@@ -114,7 +121,7 @@ The following figures show close ups of Chandler Cove, Casco Bay, Maine, USA, an
 This particle depth gradient is aimed at providing a rough estimate of where kelp particles might be in the water column at a given distance away from the kelp farms. The depth gradient is calculated based on the average drift speed, direction, and a constant sinking rate of 0.002 m/s. We recognize that the sinking rate might change as a particle crosses depth layers, but we use this to guide sampling efforts moving forward.
 
 ### Chandler Cove 28-March-2025
-```{r chandler cove, warning=FALSE, message=FALSE, echo=FALSE}
+```{r chandler_cove, warning=FALSE, message=FALSE, echo=FALSE}
 chcv = get_bbox("chcv")
 sf::sf_use_s2(F)
 chcv_coastline = coastline |>
@@ -153,7 +160,7 @@ chcv_area_plot
 ```
 
 ### Deep Cove 18-April-2025
-```{r deep cove 1, warning=FALSE, message=FALSE, echo=FALSE}
+```{r deep_cove1, warning=FALSE, message=FALSE, echo=FALSE}
 stgeo = get_bbox("stgeo")
 sf::sf_use_s2(F)
 stgeo_coastline = coastline |>
@@ -192,7 +199,7 @@ stgeo_area_plot
 ```
 
 ### Deep Cove 13-May-2025
-```{r deep cove 2, warning=FALSE, message=FALSE, echo=FALSE}
+```{r deep_cove2, warning=FALSE, message=FALSE, echo=FALSE}
 tbi_3_area = drift_area(tbi_3, 100)
 
 tbi_3_pd = particle_depth(area = tbi_3_area,

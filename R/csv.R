@@ -4,6 +4,7 @@
 #' @param filename name of file
 #' @param crs coordinate reference system
 #' @param coords names of coordinates and date_time columns
+#' @param tz chr, time zone
 #' @param ... who knows
 #' @return a table or sf object
 import_csv = function(filename, 

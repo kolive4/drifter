@@ -30,8 +30,8 @@ get_bb_table = function(name = c("casco", "chcv", "stgeo", "mecoast"),
 #' @return a bounding box object to be used with st_crop or other manipulations
 get_bbox = function(n){
   x = get_bb_table() |>
-    dplyr::filter(name == n) |>
-    dplyr::select(-name, -long_name) |>
+    dplyr::filter(.data$name == n) |>
+    dplyr::select(-dplyr::all_of(c("name", "long_name"))) |>
     unlist()
 
   x_sf = sf::st_sf(name = n,

@@ -19,6 +19,8 @@ import_csv(
 
 \item{coords}{names of coordinates and date_time columns}
 
+\item{tz}{chr, time zone}
+
 \item{...}{who knows}
 }
 \value{

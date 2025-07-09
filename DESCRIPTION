@@ -18,8 +18,18 @@ Imports:
   xml2,
   readr,
   lubridate,
-  purrr
+  purrr,
+  cofbb,
+  geosphere,
+  ggplot2,
+  leaflet,
+  stars,
+  stringr,
+  tibble,
+  units,
+  graphics
 Suggests:
-  maree
+  maree,
+  rnaturalearth
 Depends:
-  R (≥ 4.1.0)
+  R (>= 4.1.0)

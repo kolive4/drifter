@@ -3,6 +3,7 @@
 #' @export
 #' @param filename name of the file
 #' @param coords date time coordinate column name
+#' @param tz chr, time zone
 #' @return sf table
 import_gpkg = function(filename,
                        coords = "date_time",

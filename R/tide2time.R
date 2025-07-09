@@ -26,7 +26,7 @@ tide.find_closest_station = function(x = import_tracks(), n = 10, grouping_id = 
         as.numeric()
       
       id = order(d) |>
-        head(n = n)
+        utils::head(n = n)
       
       id_tide = tide_stations |>
         dplyr::slice(id) |>

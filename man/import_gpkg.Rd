@@ -10,6 +10,8 @@ import_gpkg(filename, coords = "date_time", tz = "UTC")
 \item{filename}{name of the file}
 
 \item{coords}{date time coordinate column name}
+
+\item{tz}{chr, time zone}
 }
 \value{
 sf table

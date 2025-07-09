@@ -1,6 +1,7 @@
 # data
 inst/
 *.GPX
+figures/
 
 # History files
 .Rhistory
