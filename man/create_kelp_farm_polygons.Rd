@@ -10,6 +10,7 @@ create_kelp_farm_polygons(x = kelp_farms_coords(), crs = 4326)
 \item{x}{list of kelp farms and their coordinates}
 
 \item{crs}{coordinate reference system}
+
 }
 \value{
 list of kelp farm polygons

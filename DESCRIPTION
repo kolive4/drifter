@@ -31,5 +31,4 @@ Imports:
 Suggests:
   maree,
   rnaturalearth
-Depends:
-  R (>= 4.1.0)
+Depends: R (>= 4.1.0)
