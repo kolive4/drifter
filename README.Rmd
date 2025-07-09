@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Installation
 
-```{r, warning=FALSE, echo=FALSE, message=FALSE}         
+```        
 remotes::install_github("kolive4/drifter")
 ```
 
@@ -36,6 +36,8 @@ suppressPackageStartupMessages(
   {
     library(sf)
     library(dplyr)
+    library(ggplot2)
+    library(stars)
     library(drifter)
   }
 )
@@ -82,7 +84,7 @@ sf::sf_use_s2(F)
 me_coastline = coastline |>
   sf::st_crop(mecoast)
 
-me_coast_plot = ggplot() +
+me_coast_plot = ggplot2::ggplot() +
   geom_sf(data = me_coastline, fill = "tan") +
   geom_sf(data = farms, fill = "yellowgreen") +
   geom_sf(data = tbi, aes(color = Name)) +

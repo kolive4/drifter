@@ -295,7 +295,7 @@ particle_depth = function(area, sink_rate, start_depth, max_depth, farms){
   
   grid_pts$depth = -pmin(grid_pts$distance / sqrt((h_v^2) + (sink_rate^2)) * sink_rate + start_depth, max_depth)
   
-  depth_stars = stars::st_rasterize(grid_pts["depth"]) |>
+  depth_stars = stars::st_rasterize(grid_pts["depth"], dx = 5, dy = 5) |>
     sf::st_crop(area_proj) |>
     stars::st_warp(crs = 4326)
   

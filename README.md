@@ -21,6 +21,8 @@ tools for working with track data.
 
 ### Installation
 
+    remotes::install_github("kolive4/drifter")
+
 ## Usage
 
 ### Reading drift data
@@ -48,7 +50,7 @@ tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
 ### Read in kelp farm plots
 
 ``` r
-farms = create_kelp_farm_polygons(kelp_farms_coords)
+farms = create_kelp_farm_polygons()
 ```
 
 ### Get coast shapefile
@@ -64,7 +66,7 @@ coastline = sf::read_sf("/mnt/ecocast/coredata/gshhg/GSHHS_shp/f/GSHHS_f_L1.shp"
 All drifts conducted as a part of this project are plotted in this
 figure. Though they may be too small to see in their entirety, this
 figure shows the two locales where we focused our study.
-![](README_files/figure-gfm/maine%20coast-1.png)<!-- -->
+![](README_files/figure-gfm/maine_coast-1.png)<!-- -->
 
 ## Plot explanations
 
@@ -86,12 +88,12 @@ forward.
 
 ### Chandler Cove 28-March-2025
 
-![](README_files/figure-gfm/chandler%20cove-1.png)<!-- -->
+![](README_files/figure-gfm/chandler_cove-1.png)<!-- -->
 
 ### Deep Cove 18-April-2025
 
-![](README_files/figure-gfm/deep%20cove%201-1.png)<!-- -->
+![](README_files/figure-gfm/deep_cove1-1.png)<!-- -->
 
 ### Deep Cove 13-May-2025
 
-![](README_files/figure-gfm/deep%20cove%202-1.png)<!-- -->
+![](README_files/figure-gfm/deep_cove2-1.png)<!-- -->
