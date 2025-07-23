@@ -11,7 +11,7 @@ get_bb_table(
   ymin = c(43.549256, 43.701498, 43.921795, 43.549256, 43.71),
   ymax = c(43.921978, 43.723947, 43.9558, 44.137128, 43.740928),
   long_name = c("TBI-Casco Bay", "TBI-Chandler Cove", "TBI-St. George River",
-    "ME coast to St. George", "West side of Chebeague Island")
+    "ME coast to St. George", "TBI-Chebeague Island")
 )
 }
 \arguments{

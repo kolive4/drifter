@@ -12,7 +12,7 @@ get_bb_table = function(name = c("casco", "chcv", "stgeo", "mecoast", "cheb"),
                         xmax = c(-69.715072, -70.102219, -69.246169, -69.016407, -70.121795),
                         ymin = c(43.549256, 43.701498, 43.921795, 43.549256, 43.71),
                         ymax = c(43.921978, 43.723947, 43.9558, 44.137128, 43.740928),
-                        long_name = c("TBI-Casco Bay", "TBI-Chandler Cove", "TBI-St. George River", "ME coast to St. George", "West side of Chebeague Island")){
+                        long_name = c("TBI-Casco Bay", "TBI-Chandler Cove", "TBI-St. George River", "ME coast to St. George", "TBI-Chebeague Island")){
   dplyr::tibble(
     name = name,
     xmin = xmin,
@@ -29,6 +29,9 @@ get_bb_table = function(name = c("casco", "chcv", "stgeo", "mecoast", "cheb"),
 #' @param n name of bounding box
 #' @return a bounding box object to be used with st_crop or other manipulations
 get_bbox = function(n){
+  if(FALSE) {
+    n = "cheb"
+  }
   x = get_bb_table() |>
     dplyr::filter(.data$name == n) |>
     dplyr::select(-dplyr::all_of(c("name", "long_name"))) |>
