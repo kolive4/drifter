@@ -61,7 +61,12 @@ tbi_3 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drift
   dplyr::filter(Name != "Red1: 13 MAY 2025") |>
   drift_speed()
 
-tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
+tbi_4 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_16_07_2025.GPX",
+                   form = "sf") |>
+  purrr::pluck("tracks") |>
+  drift_speed()
+
+tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3, tbi_4)
 ```
 
 ### Read in kelp farm plots
@@ -99,7 +104,10 @@ me_coast_plot = ggplot2::ggplot() +
                                 "White Drifter Drift 2: 18 APR 2025 10:48 001" = "White Drifter Trial 2 - St. George",
                                 "Red1_drift1: 13 MAY 2025 12:53"               = "Red Drifter Trial 1 - St. George",
                                 "Red1_drift2: 13 MAY 2025 12:53"               = "Red Drifter Trial 2 - St. George",
-                                "Red1_drift3: 13 MAY 2025"                     = "Red Drifter Trial 3 - St. George"),
+                                "Red1_drift3: 13 MAY 2025"                     = "Red Drifter Trial 3 - St. George",
+                                "TBI_red1: 16 JUL 2025"                    = "Red Drifter Trial 1 - Chebeague",
+                                "TBI_red2: 16 JUL 2025"                    = "Blue Drifter Trial 1 - Chebeague",
+                                "TBI_white: 16 JUL 2025"                    = "White Drifter Trial 1 - Chebeague"),
                      values = alpha(c("Red1 Drifter: 28 MAR 2025"                    = "red2", 
                                       "Red2 Drifter: 28 MAR 2025"                    = "blue", 
                                       "White drifter 28 MAR 2025 001"                = "white", 
@@ -108,7 +116,10 @@ me_coast_plot = ggplot2::ggplot() +
                                       "White Drifter Drift 2: 18 APR 2025 10:48 001" = "gray25", 
                                       "Red1_drift1: 13 MAY 2025 12:53"               = "red1", 
                                       "Red1_drift2: 13 MAY 2025 12:53"               = "red3", 
-                                      "Red1_drift3: 13 MAY 2025"                     = "red4"), 
+                                      "Red1_drift3: 13 MAY 2025"                     = "red4",
+                                      "TBI_red1: 16 JUL 2025"                      = "red2", 
+                                      "TBI_red2: 16 JUL 2025"                     = "blue", 
+                                      "TBI_white: 16 JUL 2025"                    = "white"), 
                                     0.5)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
@@ -229,4 +240,42 @@ stgeo2_area_plot = ggplot() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 stgeo2_area_plot
+```
+
+### Chebeague 16-July-2025
+```{r cheb, warning=FALSE, message=FALSE, echo=FALSE}
+cheb = get_bbox("cheb")
+sf::sf_use_s2(F)
+cheb_coastline = coastline |>
+  sf::st_crop(cheb)
+cas_farms = farms |>
+  dplyr::filter(stringr::str_starts(name, "CAS"))
+
+tbi_4_area = drift_area(tbi_4, 100) 
+
+tbi_4_pd = particle_depth(area = tbi_4_area,
+                          sink_rate = 0.002,
+                          start_depth = 2,
+                          max_depth = 13,
+                          farms = cas_farms)
+
+cheb_area_plot = ggplot() +
+  geom_sf(data = cheb_coastline, fill = "tan") +
+  geom_stars(data = tbi_4_pd) +
+  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
+  geom_sf(data = cas_farms, fill = "brown") +
+  geom_sf(data = tbi_4_area, fill = NA, color = "green3", linewidth = 1) +
+  geom_sf(data = tbi_4, aes(color = Name)) +
+  scale_x_continuous(name = "", expand = c(0,0), breaks = seq(from = -70.16, to = -70.12, by = 0.01)) +
+  scale_y_continuous(name = "", expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("Red Drifter",
+                                "Blue Drifter",
+                                "White Drifter"
+                                ),
+                     values = alpha(c("red", "blue", "white"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+cheb_area_plot
 ```

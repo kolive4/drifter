@@ -7,12 +7,12 @@
 #' @param ymax num, max latitude
 #' @param long_name chr, long name of bb location
 #' @return bounding box table
-get_bb_table = function(name = c("casco", "chcv", "stgeo", "mecoast"),
-                        xmin = c(-70.288, -70.167931, -69.301235, -70.288),
-                        xmax = c(-69.715072, -70.102219, -69.246169, -69.016407),
-                        ymin = c(43.549256, 43.701498, 43.921795, 43.549256),
-                        ymax = c(43.921978, 43.723947, 43.9558, 44.137128),
-                        long_name = c("TBI-Casco Bay", "TBI-Chandler Cove", "TBI-St. George River", "ME coast to St. George")){
+get_bb_table = function(name = c("casco", "chcv", "stgeo", "mecoast", "cheb"),
+                        xmin = c(-70.288, -70.167931, -69.301235, -70.288, -70.16),
+                        xmax = c(-69.715072, -70.102219, -69.246169, -69.016407, -70.121795),
+                        ymin = c(43.549256, 43.701498, 43.921795, 43.549256, 43.71),
+                        ymax = c(43.921978, 43.723947, 43.9558, 44.137128, 43.740928),
+                        long_name = c("TBI-Casco Bay", "TBI-Chandler Cove", "TBI-St. George River", "ME coast to St. George", "West side of Chebeague Island")){
   dplyr::tibble(
     name = name,
     xmin = xmin,
