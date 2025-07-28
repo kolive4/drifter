@@ -38,7 +38,8 @@ get_bbox = function(n){
     unlist()
 
   x_sf = sf::st_sf(name = n,
-                 geom = sf::st_sfc(cofbb::bb_as_POLYGON(x), crs = 4326))
+                   geom = sf::st_sfc(cofbb::bb_as_POLYGON(x), 
+                                     crs = 4326))
   
   x_bbox = sf::st_bbox(x_sf)
   

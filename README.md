@@ -44,7 +44,12 @@ tbi_3 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drift
   dplyr::filter(Name != "Red1: 13 MAY 2025") |>
   drift_speed()
 
-tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3)
+tbi_4 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_16_07_2025.GPX",
+                   form = "sf") |>
+  purrr::pluck("tracks") |>
+  drift_speed()
+
+tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3, tbi_4)
 ```
 
 ### Read in kelp farm plots
@@ -97,3 +102,7 @@ forward.
 ### Deep Cove 13-May-2025
 
 ![](README_files/figure-gfm/deep_cove2-1.png)<!-- -->
+
+### Chebeague 16-July-2025
+
+![](README_files/figure-gfm/cheb-1.png)<!-- -->
