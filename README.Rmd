@@ -66,7 +66,12 @@ tbi_4 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drift
   purrr::pluck("tracks") |>
   drift_speed()
 
-tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3, tbi_4)
+tbi_5 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_05_08_2025.GPX",
+                   form = "sf") |>
+  purrr::pluck("tracks") |>
+  drift_speed()
+
+tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3, tbi_4, tbi_5)
 ```
 
 ### Read in kelp farm plots
@@ -105,9 +110,12 @@ me_coast_plot = ggplot2::ggplot() +
                                 "Red1_drift1: 13 MAY 2025 12:53"               = "Red Drifter Trial 1 - St. George",
                                 "Red1_drift2: 13 MAY 2025 12:53"               = "Red Drifter Trial 2 - St. George",
                                 "Red1_drift3: 13 MAY 2025"                     = "Red Drifter Trial 3 - St. George",
-                                "TBI_red1: 16 JUL 2025"                    = "Red Drifter Trial 1 - Chebeague",
-                                "TBI_red2: 16 JUL 2025"                    = "Blue Drifter Trial 1 - Chebeague",
-                                "TBI_white: 16 JUL 2025"                    = "White Drifter Trial 1 - Chebeague"),
+                                "TBI_red1: 16 JUL 2025"                        = "Red Drifter Trial 1 - Chebeague",
+                                "TBI_red2: 16 JUL 2025"                        = "Blue Drifter Trial 1 - Chebeague",
+                                "TBI_white: 16 JUL 2025"                       = "White Drifter Trial 1 - Chebeague",
+                                "red1: 05 AUG 2025"                            = "Red Drifter - St. George",
+                                "red2: 05 AUG 2025"                            = "Blue Drifter - St. George",
+                                "white: 05 AUG 2025"                           = "White Drifter - St. George"),
                      values = alpha(c("Red1 Drifter: 28 MAR 2025"                    = "red2", 
                                       "Red2 Drifter: 28 MAR 2025"                    = "blue", 
                                       "White drifter 28 MAR 2025 001"                = "white", 
@@ -117,9 +125,12 @@ me_coast_plot = ggplot2::ggplot() +
                                       "Red1_drift1: 13 MAY 2025 12:53"               = "red1", 
                                       "Red1_drift2: 13 MAY 2025 12:53"               = "red3", 
                                       "Red1_drift3: 13 MAY 2025"                     = "red4",
-                                      "TBI_red1: 16 JUL 2025"                      = "red2", 
-                                      "TBI_red2: 16 JUL 2025"                     = "blue", 
-                                      "TBI_white: 16 JUL 2025"                    = "white"), 
+                                      "TBI_red1: 16 JUL 2025"                        = "red2", 
+                                      "TBI_red2: 16 JUL 2025"                        = "blue", 
+                                      "TBI_white: 16 JUL 2025"                       = "white",
+                                      "red1: 05 AUG 2025"                        = "red2", 
+                                      "red2: 05 AUG 2025"                        = "blue", 
+                                      "white: 05 AUG 2025"                       = "white"), 
                                     0.5)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
@@ -278,4 +289,35 @@ cheb_area_plot = ggplot() +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 cheb_area_plot
+```
+
+### Deep Cove 13-May-2025
+```{r deep_cove3, warning=FALSE, message=FALSE, echo=FALSE}
+tbi_5_area = drift_area(tbi_5, 100)
+
+tbi_5_pd = particle_depth(area = tbi_5_area,
+                          sink_rate = 0.002,
+                          start_depth = 2,
+                          max_depth = 13,
+                          farms = stgeo_farms)
+
+stgeo3_area_plot = ggplot() +
+  geom_sf(data = stgeo_coastline, fill = "tan") +
+  geom_stars(data = tbi_5_pd) +
+  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
+  geom_sf(data = stgeo_farms, fill = "brown") +
+  geom_sf(data = tbi_5_area, fill = NA, color = "green3", linewidth = 1) +
+  geom_sf(data = tbi_5, aes(color = Name)) +
+  scale_x_continuous(name = "", expand = c(0,0)) +
+  scale_y_continuous(name = "", expand = c(0,0)) +
+  scale_color_manual(name = "Drifter",
+                     labels = c("Red Drifter",
+                                "Blue Drifter",
+                                "White Drifter"
+                                ),
+                     values = alpha(c("red", "blue", "white"), 0.5)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "lightblue"))
+stgeo3_area_plot
 ```
