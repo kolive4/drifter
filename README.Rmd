@@ -161,6 +161,8 @@ tbi_1_pd = particle_depth(area = tbi_1_area,
                           max_depth = 13,
                           farms = cas_farms)
 
+avg_tbi_1_time = elapsed_time(tbi_1)
+
 chcv_area_plot = ggplot() +
   geom_sf(data = chcv_coastline, fill = "tan") +
   geom_stars(data = tbi_1_pd) +
@@ -178,6 +180,7 @@ chcv_area_plot = ggplot() +
                                 ),
                      values = alpha(c("red", "blue", "white", "gray25"), 0.5)) +
   theme_bw() +
+  labs(caption = paste0("Average drifter time: ", round(avg_tbi_1_time, digits = 2), " hours")) +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 chcv_area_plot
@@ -270,6 +273,8 @@ tbi_4_pd = particle_depth(area = tbi_4_area,
                           max_depth = 13,
                           farms = cas_farms)
 
+avg_tbi_4_time = elapsed_time(tbi_4) 
+
 cheb_area_plot = ggplot() +
   geom_sf(data = cheb_coastline, fill = "tan") +
   geom_stars(data = tbi_4_pd) +
@@ -286,12 +291,13 @@ cheb_area_plot = ggplot() +
                                 ),
                      values = alpha(c("red", "blue", "white"), 0.5)) +
   theme_bw() +
+  labs(caption = paste0("Average drifter time: ", round(avg_tbi_4_time, digits = 2), " hours")) +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 cheb_area_plot
 ```
 
-### Deep Cove 13-May-2025
+### Deep Cove 05-August-2025
 ```{r deep_cove3, warning=FALSE, message=FALSE, echo=FALSE}
 tbi_5_area = drift_area(tbi_5, 100)
 
@@ -300,6 +306,8 @@ tbi_5_pd = particle_depth(area = tbi_5_area,
                           start_depth = 2,
                           max_depth = 13,
                           farms = stgeo_farms)
+
+avg_tbi_5_time = elapsed_time(tbi_5)
 
 stgeo3_area_plot = ggplot() +
   geom_sf(data = stgeo_coastline, fill = "tan") +
@@ -317,6 +325,7 @@ stgeo3_area_plot = ggplot() +
                                 ),
                      values = alpha(c("red", "blue", "white"), 0.5)) +
   theme_bw() +
+  labs(caption = paste0("Average drifter time: ", round(avg_tbi_5_time, digits = 2), " hours")) +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "lightblue"))
 stgeo3_area_plot

@@ -301,3 +301,17 @@ particle_depth = function(area, sink_rate, start_depth, max_depth, farms){
   
   return(depth_stars)
 }
+
+#' Function to produce the average elapsed time
+#' 
+#' @export
+#' @param x sf object, drifts with times
+#' @return chr, string of the average elapsed time across three drifters
+elapsed_time = function(x){
+  times = x |>
+    dplyr::group_by(.data$Name) |>
+    dplyr::arrange(.data$Name, .data$Time) |>
+    dplyr::summarise(time_elapsed = difftime(dplyr::last(.data$Time), dplyr::first(.data$Time)))
+  avg_time = mean(times$time_elapsed)
+  return(avg_time)
+}
