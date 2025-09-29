@@ -45,33 +45,7 @@ suppressPackageStartupMessages(
 
 ### Reading drift data
 ```{r examples, warning=FALSE}
-tbi_1 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_28_03_2025.GPX",
-                   form = "sf") |>
-  purrr::pluck("tracks") |>
-  drift_speed()
-
-tbi_2 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_18_04_2025.GPX",
-                 form = "sf") |>
-  purrr::pluck("tracks") |>
-  drift_speed()
-
-tbi_3 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_13_05_2025.GPX",
-                   form = "sf") |>
-  purrr::pluck("tracks") |>
-  dplyr::filter(Name != "Red1: 13 MAY 2025") |>
-  drift_speed()
-
-tbi_4 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_16_07_2025.GPX",
-                   form = "sf") |>
-  purrr::pluck("tracks") |>
-  drift_speed()
-
-tbi_5 = import_gpx(filename = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts/TBI_drifts_05_08_2025.GPX",
-                   form = "sf") |>
-  purrr::pluck("tracks") |>
-  drift_speed()
-
-tbi = dplyr::bind_rows(tbi_1, tbi_2, tbi_3, tbi_4, tbi_5)
+tbi = read_drifts() 
 ```
 
 ### Read in kelp farm plots
@@ -128,9 +102,9 @@ me_coast_plot = ggplot2::ggplot() +
                                       "TBI_red1: 16 JUL 2025"                        = "red2", 
                                       "TBI_red2: 16 JUL 2025"                        = "blue", 
                                       "TBI_white: 16 JUL 2025"                       = "white",
-                                      "red1: 05 AUG 2025"                        = "red2", 
-                                      "red2: 05 AUG 2025"                        = "blue", 
-                                      "white: 05 AUG 2025"                       = "white"), 
+                                      "red1: 05 AUG 2025"                            = "red2", 
+                                      "red2: 05 AUG 2025"                            = "blue", 
+                                      "white: 05 AUG 2025"                           = "white"), 
                                     0.5)) +
   theme_bw() +
   theme(panel.grid = element_blank(),
@@ -153,37 +127,10 @@ chcv_coastline = coastline |>
 cas_farms = farms |>
   dplyr::filter(stringr::str_starts(name, "CAS"))
 
-tbi_1_area = drift_area(tbi_1, 100) 
-
-tbi_1_pd = particle_depth(area = tbi_1_area,
-                          sink_rate = 0.002,
-                          start_depth = 2,
-                          max_depth = 13,
-                          farms = cas_farms)
-
-avg_tbi_1_time = elapsed_time(tbi_1)
-
-chcv_area_plot = ggplot() +
-  geom_sf(data = chcv_coastline, fill = "tan") +
-  geom_stars(data = tbi_1_pd) +
-  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = cas_farms, fill = "brown") +
-  geom_sf(data = tbi_1_area, fill = NA, color = "green3", linewidth = 1) +
-  geom_sf(data = tbi_1, aes(color = Name)) +
-  scale_x_continuous(name = "", expand = c(0,0)) +
-  scale_y_continuous(name = "", expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("Red Drifter",
-                                "Blue Drifter",
-                                "White Drifter Trial 1",
-                                "White Drifter Trial 2"
-                                ),
-                     values = alpha(c("red", "blue", "white", "gray25"), 0.5)) +
-  theme_bw() +
-  labs(caption = paste0("Average drifter time: ", round(avg_tbi_1_time, digits = 2), " hours")) +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-chcv_area_plot
+tbi_1_plot = plot_drift(x = dplyr::filter(tbi, short_display_name == "TBI_1"),
+                        coastline = chcv_coastline,
+                        farms = cas_farms)
+tbi_1_plot
 ```
 
 ### Deep Cove 18-April-2025
@@ -195,65 +142,18 @@ stgeo_coastline = coastline |>
 stgeo_farms = farms |>
   dplyr::filter(stringr::str_starts(name, "STG"))
 
-tbi_2_area = drift_area(tbi_2, 100)
-
-tbi_2_pd = particle_depth(area = tbi_2_area,
-                          sink_rate = 0.002,
-                          start_depth = 2,
-                          max_depth = 13,
-                          farms = stgeo_farms)
-
-stgeo_area_plot = ggplot() +
-  geom_sf(data = stgeo_coastline, fill = "tan") +
-  geom_stars(data = tbi_2_pd) +
-  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = farms |>
-            dplyr::filter(stringr::str_starts(name, "STG")), fill = "brown") +
-  geom_sf(data = tbi_2_area, fill = NA, color = "green3", linewidth = 1) +
-  geom_sf(data = tbi_2, aes(color = Name)) +
-  scale_x_continuous(name = "", expand = c(0,0)) +
-  scale_y_continuous(name = "", expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("4/18 White Drifter Trial 1",
-                                "4/18 White Drifter Trial 2"
-                                ),
-                     values = alpha(c("white", "gray25"), 0.5)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-stgeo_area_plot
-
+tbi_2_plot = plot_drift(x = dplyr::filter(tbi, short_display_name == "TBI_2"),
+                        coastline = stgeo_coastline,
+                        farms = stgeo_farms)
+tbi_2_plot
 ```
 
 ### Deep Cove 13-May-2025
 ```{r deep_cove2, warning=FALSE, message=FALSE, echo=FALSE}
-tbi_3_area = drift_area(tbi_3, 100)
-
-tbi_3_pd = particle_depth(area = tbi_3_area,
-                          sink_rate = 0.002,
-                          start_depth = 2,
-                          max_depth = 13,
-                          farms = stgeo_farms)
-
-stgeo2_area_plot = ggplot() +
-  geom_sf(data = stgeo_coastline, fill = "tan") +
-  geom_stars(data = tbi_3_pd) +
-  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = stgeo_farms, fill = "brown") +
-  geom_sf(data = tbi_3_area, fill = NA, color = "green3", linewidth = 1) +
-  geom_sf(data = tbi_3, aes(color = Name)) +
-  scale_x_continuous(name = "", expand = c(0,0)) +
-  scale_y_continuous(name = "", expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("5/13 Red Drifter Trial 1",
-                                "5/13 Red Drifter Trial 2",
-                                "5/13 Red Drifter Trial 3"
-                                ),
-                     values = alpha(c("red1", "red3", "red4"), 0.5)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-stgeo2_area_plot
+tbi_3_plot = plot_drift(x = dplyr::filter(tbi, short_display_name == "TBI_3"),
+                        coastline = stgeo_coastline,
+                        farms = stgeo_farms)
+tbi_3_plot
 ```
 
 ### Chebeague 16-July-2025
@@ -265,68 +165,16 @@ cheb_coastline = coastline |>
 cas_farms = farms |>
   dplyr::filter(stringr::str_starts(name, "CAS"))
 
-tbi_4_area = drift_area(tbi_4, 100) 
-
-tbi_4_pd = particle_depth(area = tbi_4_area,
-                          sink_rate = 0.002,
-                          start_depth = 2,
-                          max_depth = 13,
-                          farms = cas_farms)
-
-avg_tbi_4_time = elapsed_time(tbi_4) 
-
-cheb_area_plot = ggplot() +
-  geom_sf(data = cheb_coastline, fill = "tan") +
-  geom_stars(data = tbi_4_pd) +
-  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = cas_farms, fill = "brown") +
-  geom_sf(data = tbi_4_area, fill = NA, color = "green3", linewidth = 1) +
-  geom_sf(data = tbi_4, aes(color = Name)) +
-  scale_x_continuous(name = "", expand = c(0,0), breaks = seq(from = -70.16, to = -70.12, by = 0.01)) +
-  scale_y_continuous(name = "", expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("Red Drifter",
-                                "Blue Drifter",
-                                "White Drifter"
-                                ),
-                     values = alpha(c("red", "blue", "white"), 0.5)) +
-  theme_bw() +
-  labs(caption = paste0("Average drifter time: ", round(avg_tbi_4_time, digits = 2), " hours")) +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-cheb_area_plot
+tbi_4_plot = plot_drift(x = dplyr::filter(tbi, short_display_name == "TBI_4"),
+                        coastline = cheb_coastline,
+                        farms = cas_farms)
+tbi_4_plot
 ```
 
 ### Deep Cove 05-August-2025
 ```{r deep_cove3, warning=FALSE, message=FALSE, echo=FALSE}
-tbi_5_area = drift_area(tbi_5, 100)
-
-tbi_5_pd = particle_depth(area = tbi_5_area,
-                          sink_rate = 0.002,
-                          start_depth = 2,
-                          max_depth = 13,
-                          farms = stgeo_farms)
-
-avg_tbi_5_time = elapsed_time(tbi_5)
-
-stgeo3_area_plot = ggplot() +
-  geom_sf(data = stgeo_coastline, fill = "tan") +
-  geom_stars(data = tbi_5_pd) +
-  scale_fill_viridis_c(name = "Depth (m)", na.value = NA) +
-  geom_sf(data = stgeo_farms, fill = "brown") +
-  geom_sf(data = tbi_5_area, fill = NA, color = "green3", linewidth = 1) +
-  geom_sf(data = tbi_5, aes(color = Name)) +
-  scale_x_continuous(name = "", expand = c(0,0)) +
-  scale_y_continuous(name = "", expand = c(0,0)) +
-  scale_color_manual(name = "Drifter",
-                     labels = c("Red Drifter",
-                                "Blue Drifter",
-                                "White Drifter"
-                                ),
-                     values = alpha(c("red", "blue", "white"), 0.5)) +
-  theme_bw() +
-  labs(caption = paste0("Average drifter time: ", round(avg_tbi_5_time, digits = 2), " hours")) +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "lightblue"))
-stgeo3_area_plot
+tbi_5_plot = plot_drift(x = dplyr::filter(tbi, short_display_name == "TBI_5"),
+                        coastline = stgeo_coastline,
+                        farms = stgeo_farms)
+tbi_5_plot
 ```

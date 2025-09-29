@@ -315,3 +315,93 @@ elapsed_time = function(x){
   avg_time = mean(times$time_elapsed)
   return(avg_time)
 }
+
+
+#' Drift organization and binding
+#' 
+#' @export
+#' @param name one or more drift names
+#' @param path path to the drift
+#' @param ext extension
+#' @param lut lut object, if provided do a left join of lut to drift data, or NULL to skip
+#' @return tbl
+read_drifts = function(name = c("TBI_drifts_28_03_2025", "TBI_drifts_18_04_2025", "TBI_drifts_13_05_2025", "TBI_drifts_16_07_2025", "TBI_drifts_05_08_2025"), 
+                      path = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts", 
+                      ext = ".GPX",
+                      lut = read_display_lut()) {
+  if(length(name) > 1){
+    x = lapply(name, read_drifts, path = path, ext = ext, lut = NULL) |>
+      dplyr::bind_rows()
+    if (!is.null(lut)) {
+      x = x |>
+        dplyr::left_join(lut, by = "Name")
+    } 
+    return(x)
+  } 
+  x = import_gpx(filename = file.path(path[1], paste0(name, ext[1])),
+             form = "sf") |>
+    purrr::pluck("tracks") |>
+    drift_speed() |>
+    dplyr::mutate(drift_name = name, .before = 1)
+  if (!is.null(lut)) {
+    x = x |>
+      dplyr::left_join(lut, by = "Name")
+  } 
+  return(x)
+}
+
+#' Read lut for drifter display labels/colors
+#' 
+#' @export
+#' @param name lut filename
+#' @param path path to lut
+#' @return lut
+read_display_lut = function(name = "display_lut.csv",
+                            path = "/mnt/ecocast/projects/koliveira/subprojects/drifter/inst/ex_data/TBI_drifts"){
+  readr::read_csv(file.path(path, name), col_types = "cccc")
+}
+
+#' Plotting drifts
+#'
+#' @export
+#' @param x data for the plot
+#' @param coastline required coastline object
+#' @param farms required kelp farm polygons
+#' @param area polygon area of the drift
+#' @param pd kelp particle depth
+#' @param time elapsed time of the drift
+#' @return ggplot object
+plot_drift = function(x = read_drifts() |> dplyr::filter(short_display_name == "TBI_1"),
+                      coastline,
+                      farms,
+                      area = drift_area(x, 100),
+                      pd = particle_depth(area, 
+                                          sink_rate = 0.002, 
+                                          start_depth = 2,
+                                          max_depth = 13,
+                                          farms = farms),
+                      time = elapsed_time(x)){
+  labels = unique(x$full_display_name)
+  cols = unique(x$color)
+    
+  gg = ggplot2::ggplot() +
+    ggplot2::geom_sf(data = coastline, fill = "tan") +
+    stars::geom_stars(data = pd)  +
+    ggplot2::scale_fill_viridis_c(name = "Particle\nDepth (m)", na.value = NA) +
+    ggplot2::geom_sf(data = farms, fill = "brown") +
+    ggplot2::geom_sf(data = area, fill = NA, color = "green3", linewidth = 1) +
+    ggplot2::geom_sf(data = x |> dplyr::group_by(Name), ggplot2::aes(color = Name)) +
+    ggplot2::geom_sf(data = x |>
+              dplyr::group_by(Name) |>
+              dplyr::slice_tail(n = 1), color = "black", fill = "purple", shape = 24, size = 2) +
+    ggplot2::scale_x_continuous(name = "", expand = c(0,0)) +
+    ggplot2::scale_y_continuous(name = "", expand = c(0,0)) +
+    ggplot2::scale_color_manual(name = "Drifter",
+                       labels = labels,
+                       values = ggplot2::alpha(cols, 0.5)) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(caption = paste0("Average drifter time: ", round(time, digits = 2), paste0(" ", units(time)))) +
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+          panel.background = ggplot2::element_rect(fill = "lightblue"))
+  return(gg)
+}
