@@ -5,7 +5,7 @@
 \title{Plotting drifts}
 \usage{
 plot_drift(
-  x = dplyr::filter(read_drifts(), short_display_name == "TBI_1"),
+  x = dplyr::filter(read_drifts(), .data$short_display_name == "TBI_1"),
   coastline,
   farms,
   area = drift_area(x, 100),

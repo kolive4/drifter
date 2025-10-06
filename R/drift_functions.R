@@ -371,7 +371,7 @@ read_display_lut = function(name = "display_lut.csv",
 #' @param pd kelp particle depth
 #' @param time elapsed time of the drift
 #' @return ggplot object
-plot_drift = function(x = read_drifts() |> dplyr::filter(short_display_name == "TBI_1"),
+plot_drift = function(x = read_drifts() |> dplyr::filter(.data$short_display_name == "TBI_1"),
                       coastline,
                       farms,
                       area = drift_area(x, 100),
@@ -390,9 +390,9 @@ plot_drift = function(x = read_drifts() |> dplyr::filter(short_display_name == "
     ggplot2::scale_fill_viridis_c(name = "Particle\nDepth (m)", na.value = NA) +
     ggplot2::geom_sf(data = farms, fill = "brown") +
     ggplot2::geom_sf(data = area, fill = NA, color = "green3", linewidth = 1) +
-    ggplot2::geom_sf(data = x |> dplyr::group_by(Name), ggplot2::aes(color = Name)) +
+    ggplot2::geom_sf(data = x |> dplyr::group_by(.data$Name), ggplot2::aes(color = .data$Name)) +
     ggplot2::geom_sf(data = x |>
-              dplyr::group_by(Name) |>
+              dplyr::group_by(.data$Name) |>
               dplyr::slice_tail(n = 1), color = "black", fill = "purple", shape = 24, size = 2) +
     ggplot2::scale_x_continuous(name = "", expand = c(0,0)) +
     ggplot2::scale_y_continuous(name = "", expand = c(0,0)) +
